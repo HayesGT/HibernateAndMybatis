@@ -1,0 +1,16 @@
+body {
+	color: #333333;
+	font-family: "宋体", sans-serif;
+	font-size: 14px;
+}
+.form-group {
+ margin-bottom: 10px;
+}
+.control-label{
+	font-weight: 500;
+}
+@media (min-width: 992px){
+	.col-md-14 {
+	  width: 12.666667%;
+	}
+}

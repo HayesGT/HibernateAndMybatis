@@ -1,0 +1,13 @@
+/applicationContext-db.xml
+/applicationContext-mvc.xml
+/applicationContext.xml
+/com/
+/ehcache.xml
+/ehcache.xsd
+/init.properties
+/log
+/log4j.dtd
+/log4j.xml
+/mybatis-config.xml
+/views.properties
+/webdefault.xml

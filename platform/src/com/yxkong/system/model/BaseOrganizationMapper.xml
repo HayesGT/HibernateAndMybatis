@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxkong.system.model.BaseOrganization">
+  <resultMap type="com.yxkong.system.model.BaseOrganization" id="BaseOrganizationResultMap" >
+     <result column="id" property="id" jdbcType="VARCHAR" />
+     <result column="creator" property="creator" jdbcType="VARCHAR" />
+     <result column="updator" property="updator" jdbcType="VARCHAR"/>
+     <result column="created" property="created" jdbcType="TIMESTAMP" />
+     <result column="updated" property="updated" jdbcType="TIMESTAMP" />
+     <result column="sort" property="sort" jdbcType="INTEGER"/>
+     <result column="remark" property="remark" jdbcType="VARCHAR"/>
+     <result column="status" property="status" jdbcType="INTEGER"/>
+     <result column="delStatue" property="delStatue" jdbcType="INTEGER"/>
+     <result column="name" property="name" jdbcType="VARCHAR"/>
+     <result column="code" property="code" jdbcType="VARCHAR"/>
+     <result column="pId" property="pId" jdbcType="VARCHAR"/>
+     <result column="parent" property="parent" jdbcType="VARCHAR"/>
+     <result column="treeLevel" property="treeLevel" jdbcType="INTEGER"/>
+     <result column="treeDepend" property="treeDepend" jdbcType="INTEGER"/>
+     <result column="leftValue" property="leftValue" jdbcType="INTEGER"/>
+     <result column="rightValue" property="rightValue" jdbcType="INTEGER"/>
+  </resultMap>
+  <!-- 表名 -->
+  <sql id="tableNameSql">
+	F_BaseOrganization 
+  </sql>
+
+	<!-- 用于select查询、insert的公用抽取的列 -->
+	<sql id="commonSelectColumnsPrefix">
+        	id ,
+        	name,
+        	code,
+        	pId,
+        	parent,
+        	treeLevel,
+        	treeDepend,
+        	leftValue,
+        	rightValue,
+        	creator,
+        	updator,
+        	created,
+        	updated,
+        	sort,
+        	remark,
+        	status,
+        	delStatue
+	</sql>
+
+	<!-- 按主键查找条件语句 -->
+	<sql id="conditionOnlyId">
+		id = #{id}
+	</sql>
+	
+	<sql id="mainSql">
+		SELECT
+			<include refid="commonSelectColumnsPrefix"/>
+		FROM
+			<include refid="tableNameSql"/> t
+	</sql>
+	<sql id="varSql">
+		<where>
+			<if test="name!=null and name!=''">and t.name like "%"#{name}"%" </if>
+			<if test="code!=null and code!=''">and t.code=#{code} </if>
+			<if test="pId!=null and pId!=''">and t.pId=#{pId} </if>
+			<if test="parent!=null and parent!=''">and t.parent=#{parent} </if>
+			<if test="treeLevel!=null and treeLevel!='' ">and t.treeLevel=#{treeLevel} </if>
+			<if test="treeDepend!=null and treeDepend!='' ">and t.treeDepend=#{treeDepend} </if>
+			<if test="leftValue!=null and leftValue!='' ">and t.leftValue=#{leftValue} </if>
+			<if test="rightValue!=null and rightValue!='' ">and t.rightValue=#{rightValue} </if>
+			<if test="status!=null and status!=''">and t.status=#{status}</if>
+			<if test="delStatue!=null and delStatue!=''">and t.delStatue=#{delStatue} </if>
+			<if test="creator!=null and creator!=''">and t.creator=#{creator} </if>
+			<if test="searchValue!=null and searchValue!=''"> and(t.name like "%"#{searchValue}"%" or t.code like "%"#{searchValue}"%" s )</if>
+		</where>
+	</sql>
+	<select id="findById" parameterType="String" resultMap="BaseOrganizationResultMap">
+		<include refid="mainSql"/>
+		where <include refid="conditionOnlyId"/>
+	</select>
+	<select id="findCountBy" parameterType="java.util.Map" resultType="INTEGER">
+		SELECT
+			COUNT(*) AS C
+		FROM
+			<include refid="tableNameSql"/> 
+		<include refid="varSql"/>
+	</select>
+	<select id="findListBy" parameterType="java.util.Map" resultMap="BaseOrganizationResultMap">
+		<include refid="mainSql"/>
+		<include refid="varSql"/>
+		<choose>
+           <when test="SORT != null and SORT != ''">
+               order by  ${SORT} 
+               <if test="DIR != null and DIR != ''">${DIR}</if>
+ 			</when>
+           <otherwise>order by sort</otherwise>
+        </choose>
+	</select>
+	
+	<insert id="save" parameterType="com.yxkong.system.model.BaseOrganization">
+		insert into
+			<include refid="tableNameSql"/>
+		(
+			<include refid="commonSelectColumnsPrefix"/>
+		)
+		values
+		(	
+			#{id, jdbcType=VARCHAR} ,
+			#{name, jdbcType=VARCHAR} ,
+        	#{code, jdbcType=VARCHAR},
+        	#{pId, jdbcType=VARCHAR},
+        	#{parent, jdbcType=VARCHAR},
+        	#{treeLevel, jdbcType=INTEGER},
+        	#{treeDepend, jdbcType=INTEGER},
+        	#{leftValue, jdbcType=INTEGER},
+        	#{rightValue, jdbcType=INTEGER},
+			#{creator, jdbcType=VARCHAR} ,
+			#{updator, jdbcType=VARCHAR} ,
+			#{created, jdbcType=TIMESTAMP} ,
+			#{updated, jdbcType=TIMESTAMP} ,
+			#{sort, jdbcType=INTEGER} ,
+			#{remark, jdbcType=VARCHAR} ,
+			#{status, jdbcType=INTEGER} ,
+			#{delStatue, jdbcType=INTEGER} 
+		)
+	</insert>
+
+	<update id="update" parameterType="com.yxkong.system.model.BaseOrganization">
+		update
+			<include refid="tableNameSql"/>
+		set
+		  <trim suffixOverrides=",">
+			<if test="name!=null and name!=''">name=#{name, jdbcType=VARCHAR} ,</if>
+			<if test="code!=null and code!=''">code=#{code, jdbcType=VARCHAR},</if>
+        	<if test="pId!=null and pId!=''">pId=#{pId, jdbcType=VARCHAR},</if>
+        	<if test="parent!=null and parent!=''">parent=#{parent, jdbcType=VARCHAR},</if>
+        	<if test="treeLevel!=null and treeLevel!=''">treeLevel=#{treeLevel, jdbcType=INTEGER},</if>
+        	<if test="treeDepend!=null and treeDepend!=''">treeDepend=#{treeDepend, jdbcType=INTEGER},</if>
+        	<if test="leftValue!=null and leftValue!=''">leftValue=#{leftValue, jdbcType=INTEGER},</if>
+        	<if test="rightValue!=null and rightValue!=''">rightValue=#{rightValue, jdbcType=INTEGER},</if>
+			<if test="updator!=null and updator!=''">updator=#{updator, jdbcType=VARCHAR} ,</if>
+			<if test="updated!=null and updated!=''">updated=#{updated, jdbcType=TIMESTAMP} ,</if>
+			<if test="sort!=null and sort!=''">sort=#{sort, jdbcType=INTEGER} ,</if>
+			<if test="remark!=null and remark!=''">remark=#{remark, jdbcType=VARCHAR} ,</if>
+			<if test="status!=null and status!=''">status=#{status, jdbcType=INTEGER} ,</if>
+			<if test="delStatue!=null and delStatue!=''"> delStatue=#{delStatue, jdbcType=INTEGER},</if>
+		  </trim>
+		where <include refid="conditionOnlyId"/>
+	</update>
+	<delete id="deleteByIds">
+		delete from <include refid="tableNameSql"/> 
+		 where id in <foreach index="index" item="item" collection="array" separator="," open="(" close=")" >#{item}</foreach>
+	</delete>
+
+	<delete id="deleteById" parameterType="Object">
+		delete from <include refid="tableNameSql"/> where <include refid="conditionOnlyId"/>
+	</delete>
+</mapper>

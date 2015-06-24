@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以类路径为命名空间是为了在封装dao的时候利用类的泛型参数来获取该命名空间，省的自己再去记忆 -->
+<mapper namespace="com.yxkong.system.model.BaseUser">
+  <cache/>
+  <!-- 将实体类映射为map
+      type="BaseUser" BaseUser mybatis-confing.xml中配置的别名
+   -->
+  <resultMap type="BaseUser" id="BaseUserResultMap">
+     <result column="id" property="id" jdbcType="VARCHAR" />
+     <result column="creator" property="creator" jdbcType="VARCHAR" />
+     <result column="updator" property="updator" jdbcType="VARCHAR"/>
+     <result column="created" property="created" jdbcType="TIMESTAMP" />
+     <result column="updated" property="updated" jdbcType="TIMESTAMP" />
+     <result column="sort" property="sort" jdbcType="INTEGER"/>
+     <result column="remark" property="remark" jdbcType="VARCHAR"/>
+     <result column="status" property="status" jdbcType="INTEGER"/>
+     <result column="delStatue" property="delStatue" jdbcType="INTEGER"/>
+     <result column="loginName" property="loginName" jdbcType="VARCHAR"/>
+     <result column="password" property="password" jdbcType="VARCHAR"/>
+     <result column="nickName" property="nickName" jdbcType="VARCHAR"/>
+     <result column="email" property="email" jdbcType="VARCHAR"/>
+     <result column="sex" property="sex" jdbcType="INTEGER"/>
+     <result column="age" property="age" jdbcType="INTEGER"/>
+     <result column="birthday" property="birthday" jdbcType="DATE" />
+     <result column="idCard" property="idCard" jdbcType="VARCHAR"/>
+     <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+     <result column="telPhone" property="telPhone" jdbcType="VARCHAR"/>
+     <result column="province" property="province" jdbcType="VARCHAR"/>
+     <result column="city" property="city" jdbcType="VARCHAR"/>
+     <result column="county" property="county" jdbcType="VARCHAR"/>
+     <result column="address" property="address" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <!-- 表名 -->
+  <sql id="tableNameSql">
+	F_BaseUser 
+  </sql>
+
+	<!-- 用于select查询、insert的公用抽取的列 -->
+	<sql id="commonSelectColumnsPrefix">
+        	id,
+        	loginName,
+        	password,
+        	nickName,
+        	email,
+        	sex,
+        	age,
+        	birthday,
+        	idCard,
+        	mobile,
+        	telPhone,
+        	province,
+        	city,
+        	county,
+        	address,
+        	creator,
+        	updator,
+        	created,
+        	updated,
+        	sort,
+        	remark,
+        	status,
+        	delStatue
+	</sql>
+
+	<!-- 按主键查找条件语句 -->
+	<sql id="conditionOnlyId">
+		id = #{id}
+	</sql>
+	<!-- 查询主体  -->
+	<sql id="mainSql">
+		SELECT
+			<include refid="commonSelectColumnsPrefix"/>
+		FROM
+			<include refid="tableNameSql"/> t
+	</sql>
+	<!-- 查询条件封装 -->
+	<sql id="varSql">
+		<where >
+		  <!-- 
+		       prefix='where'： 增加前缀where
+		       suffixOverrides='and'：    如是以and开头就把and覆盖了 
+		       suffix：增加后缀
+		       prefixOverrides=',': 如果是以','结尾就把','去掉
+		  -->
+		  <trim suffixOverrides="and" >
+		    <!-- 
+		       mybatis 中模糊查询 like #{name}  这种写法最后查询出来的数据是按照等值查的
+		                  模糊查询一共有三种方式：
+		              like "%"#{name}"%"  推荐这种写法
+		              like '%'||#{name}||'%'
+		              like '%${name}%'
+		              # 占位符，有防sql注入的功能   name=#{name}解析出来是 name=?
+		              $ 代表解析动态变量     name=${name}  解析出来时name='yxkong'
+		     -->
+			<if test="loginName!=null and loginName!=''">and t.loginName like "%"#{loginName}"%" </if>
+			<if test="nickName!=null and nickName!=''">and t.nickName like "%"||#{nickName}||"%" </if>
+			<if test="email!=null and email!=''">and t.email like '%${email}%' </if>
+			<!-- Integer类型也必须这么写，否则会按""的string类型查询 -->
+			<if test="sex!=null and sex!=''">and t.sex=#{sex} </if>
+			<if test="age!=null and age!=''">and t.age=#{age} </if>
+			<if test="idCard!=null and idCard!=''">and t.idCard like "%"#{idCard}"%" </if>
+			<if test="mobile!=null and mobile!=''">and t.mobile like "%"#{mobile}"%" </if>
+			<if test="telPhone!=null and telPhone!=''">and t.telPhone like "%"#{telPhone}"%" </if>
+			<if test="province!=null and province!=''">and t.province= #{province} </if>
+			<if test="city!=null and city!=''">and t.city=#{city} </if>
+			<if test="county!=null and county!=''">and t.county=#{county} </if>
+			<if test="address!=null and address!=''">and t.address like "%"#{address} "%"</if>
+			<if test="delStatue!=null and delStatue!=''">and t.delStatue=#{delStatue} </if>
+			<if test="creator!=null and creator!=''">and t.creator=#{creator} </if>
+			<if test="searchValue!=null and searchValue!=''"> and (t.loginName like "%"#{searchValue}"%" or t.nickName like "%"#{searchValue}"%"  )</if>
+		   </trim>
+		</where>
+	</sql>
+	<!-- 
+	    select 定义查询语句
+	    id:在命名空间下唯一标识该sql
+	    parameterMap：传入的参数结果为map
+	    parameterType:传入的参数的类型，可以为基本类型或类类型
+	                注：parameterMap和parameterType两者只能存其一
+	    resultMap：返回结果为map集合
+	    resultType：返回结果为基本类型或类类型
+	                注：resultMap和resultType 两者只能存其一
+	 -->
+	<select id="findById" parameterType="String" resultMap="BaseUserResultMap" >
+		<include refid="mainSql"/>
+		where <include refid="conditionOnlyId"/>
+	</select>
+	<select id="loginBy" parameterType="java.util.Map" resultMap="BaseUserResultMap">
+		<include refid="mainSql"/>
+		<include refid="varSql"/>
+	</select>
+    <select id="findItemById" parameterType="String" resultType="BaseUser">
+		<include refid="mainSql"/>
+		where <include refid="conditionOnlyId"/>
+	</select>
+	<select id="findCountBy" parameterType="java.util.Map" resultType="INTEGER">
+		SELECT
+			COUNT(*) AS C
+		FROM
+			<include refid="tableNameSql"/> 
+		<include refid="varSql"/>
+	</select>
+	<!-- 直接用sql查询，不用再定义 -->
+	<select id="findBySql" parameterType="SQLAdapter" resultMap="BaseUserResultMap">
+		${sql}
+	</select>
+	<select id="findUsersByOrgId" parameterType="java.util.Map" resultMap="BaseUserResultMap">
+	   select u.* from F_BaseUser u, F_BaseUserRelated r where u.id=r.userId 
+	    <if test="orgId!=null and orgId!=''">and r.orgId=#{orgId} </if>
+	    <if test="delStatue!=null and delStatue!=''">and t.delStatue=#{delStatue} </if>
+	    <choose>
+           <when test="SORT != null and SORT != ''">
+               order by  ${SORT} 
+               <if test="DIR != null and DIR != ''">${DIR}</if>
+ 			</when>
+           <otherwise>order by sort</otherwise>
+        </choose>
+	</select>
+	<select id="findListBy" parameterType="java.util.Map" resultMap="BaseUserResultMap">
+		<include refid="mainSql"/>
+		<include refid="varSql"/>
+		<!-- mybatis中没有else，无法使用  if else 做判断
+		     这里用choose代替 if else
+		     如果SORT存在，那么按照存在的字段去排序
+		    不存在SORT，那么默认按照 sort字段排序
+		 -->
+		<choose>
+           <when test="SORT != null and SORT != ''">
+               order by  ${SORT} 
+               <if test="DIR != null and DIR != ''"> ${DIR}</if>
+ 		   </when>
+           <otherwise> order by sort</otherwise>
+        </choose>
+	</select>
+	<!-- 
+	    insert 定义插入语句
+	 -->
+	<insert id="save" parameterType="BaseUser">
+		insert into
+			<include refid="tableNameSql"/>
+		(
+			<include refid="commonSelectColumnsPrefix"/>
+		)
+		values
+		(	
+			#{id, jdbcType=VARCHAR} ,
+			#{loginName, jdbcType=VARCHAR} ,
+			#{password, jdbcType=VARCHAR} ,
+			#{nickName, jdbcType=VARCHAR},
+			#{email, jdbcType=VARCHAR},
+			#{sex, jdbcType=INTEGER},
+			#{age, jdbcType=INTEGER},
+			#{birthday, jdbcType=TIMESTAMP} ,
+			#{idCard, jdbcType=VARCHAR},
+			#{mobile, jdbcType=VARCHAR},
+			#{telPhone, jdbcType=VARCHAR},
+			#{province, jdbcType=VARCHAR},
+			#{city, jdbcType=VARCHAR},
+			#{county, jdbcType=VARCHAR},
+			#{address, jdbcType=VARCHAR},
+			#{creator, jdbcType=VARCHAR} ,
+			#{updator, jdbcType=VARCHAR} ,
+			#{created, jdbcType=TIMESTAMP} ,
+			#{updated, jdbcType=TIMESTAMP} ,
+			#{sort, jdbcType=INTEGER} ,
+			#{remark, jdbcType=VARCHAR} ,
+			#{status, jdbcType=INTEGER} ,
+			#{delStatue, jdbcType=INTEGER} 
+		)
+	</insert>
+     <!-- 
+	    update 定义更新语句
+	 -->
+	<update id="update" parameterType="BaseUser">
+		update
+			<include refid="tableNameSql"/>
+		set
+		<!--  <trim prefix="values (" suffix=")" suffixOverrides="," > -->
+		 <trim suffixOverrides=",">
+		    <if test="loginName!=null and loginName!=''">loginName=#{loginName, jdbcType=VARCHAR} ,</if>
+		    <if test="password!=null and password!=''">password=#{password, jdbcType=VARCHAR} ,</if>
+			<if test="nickName!=null and nickName!=''">nickName=#{nickName, jdbcType=VARCHAR},</if>
+			<if test="email!=null and email!=''">email=#{email, jdbcType=VARCHAR},</if>
+			<if test="sex!=null and sex!=''"> sex=#{sex, jdbcType=INTEGER}, </if>
+			<if test="age!=null and age!=''"> age=#{age, jdbcType=INTEGER}, </if>
+			<if test="birthday!=null and birthday!=''">birthday=#{birthday, jdbcType=VARCHAR},</if>
+			<if test="idCard!=null and idCard!=''">idCard=#{idCard, jdbcType=VARCHAR},</if>
+			<if test="mobile!=null and mobile!=''">mobile=#{mobile, jdbcType=VARCHAR},</if>
+			<if test="telPhone!=null and telPhone!=''">telPhone=#{telPhone, jdbcType=VARCHAR},</if>
+			<if test="province!=null and province!=''">province=#{province, jdbcType=VARCHAR},</if>
+			<if test="city!=null and city!=''">city=#{city, jdbcType=VARCHAR},</if>
+			<if test="county!=null and county!=''">county=#{county, jdbcType=VARCHAR},</if>
+			<if test="address!=null and address!=''">address=#{address, jdbcType=VARCHAR},</if>
+			<if test="updator!=null and updator!=''">updator=#{updator, jdbcType=VARCHAR} ,</if>
+			<if test="updated!=null and updated!=''">updated=#{updated, jdbcType=TIMESTAMP} ,</if>
+			<if test="sort!=null and sort!=''">sort=#{sort, jdbcType=INTEGER} ,</if>
+			<if test="remark!=null and remark!=''">remark=#{remark, jdbcType=VARCHAR} ,</if>
+			<if test="status!=null and status!=''">status=#{status, jdbcType=INTEGER} ,</if>
+			<if test="delStatue!=null and delStatue!=''">delStatue=#{delStatue, jdbcType=INTEGER},</if>
+		</trim>
+		where <include refid="conditionOnlyId"/>
+	</update>
+	<!-- 
+	   delete 定义删除sql
+	 -->
+    <delete id="deleteByIds">
+		delete from <include refid="tableNameSql"/> 
+		<!-- 
+		   foreach 遍历
+		      index：当前索引
+		      item: 当前循环的项
+		      collection: 遍历的集合类型
+		      separator: 以什么分割集合
+		      open: 以什么为前缀包裹
+		      close: 以什么为后缀包裹
+		 -->
+		 where id in <foreach index="index" item="item" collection="array" separator="," open="(" close=")" >#{item}</foreach>
+	</delete>
+
+	<delete id="deleteById" parameterType="Object">
+		delete from <include refid="tableNameSql"/> where <include refid="conditionOnlyId"/>
+	</delete>
+</mapper>

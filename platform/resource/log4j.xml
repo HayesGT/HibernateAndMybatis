@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+<log4j:configuration>
+    <!-- 文件日常输出 -->
+	<appender name="filelog_daily" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="D:/platform/logs/daily.log" />
+		<param name="DatePattern" value="'_'yyyy-MM-dd'.log'" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss} %-5p] [%t] (%c:%L) - %m%n" />
+		</layout>
+	</appender>
+	<!-- 文件控制台输出 -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Encoding" value="UTF-8" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="conversionPattern"	value="%d{ABSOLUTE} %5p %c{1}:%L - %m%n" />
+		</layout>
+	</appender>
+	<!-- spring接管的hibernate输出 -->
+	<logger name="org.springframework.orm.hibernate4" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+	<logger name="org.hibernate" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+	<!-- springmvc 输出 -->
+	<logger name="org.springframework.web" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+	<!-- mybatis输出 -->
+	<logger name="com.ibatis" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+	<logger name="java.sql" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+	<logger name="com.yxkong" additivity="true">
+		<level value="debug"></level>
+		<appender-ref ref="console" />
+		<appender-ref ref="filelog_daily" />
+	</logger>
+</log4j:configuration>

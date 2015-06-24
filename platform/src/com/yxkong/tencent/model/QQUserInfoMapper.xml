@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxkong.tencent.model.QQUseInfo">
+  <resultMap type="com.yxkong.tencent.model.QQUseInfo" id="qqUserInfoResultMap">
+     <result column="id" property="id" jdbcType="VARCHAR" />
+     <result column="creator" property="creator" jdbcType="VARCHAR" />
+     <result column="updator" property="updator" jdbcType="VARCHAR"/>
+     <result column="created" property="created" jdbcType="TIMESTAMP" />
+     <result column="updated" property="updated" jdbcType="TIMESTAMP" />
+     <result column="sort" property="sort" jdbcType="INTEGER"/>
+     <result column="remark" property="remark" jdbcType="VARCHAR"/>
+     <result column="status" property="status" jdbcType="INTEGER"/>
+     <result column="delStatue" property="delStatue" jdbcType="INTEGER"/>
+     <result column="openId" property="openId" jdbcType="VARCHAR"/>
+     <result column="nickname" property="nickname" jdbcType="VARCHAR"/>
+     <result column="gender" property="gender" jdbcType="VARCHAR"/>
+     <result column="vip" property="vip" jdbcType="BOOLEAN"/>
+     <result column="yellowYearVip" property="yellowYearVip" jdbcType="BOOLEAN"/>
+     <result column="level" property="level" jdbcType="INTEGER"/>
+     <result column="figureurl30" property="figureurl30" jdbcType="VARCHAR"/>
+     <result column="figureurl50" property="figureurl50" jdbcType="VARCHAR"/>
+     <result column="figureurl100" property="figureurl100" jdbcType="VARCHAR"/>
+     <result column="userId" property="userId" jdbcType="VARCHAR"/>
+  </resultMap>
+  <!-- 表名 -->
+  <sql id="tableNameSql">
+	F_QQUSEINFO 
+  </sql>
+
+	<!-- 用于select查询、insert的公用抽取的列 -->
+	<sql id="commonSelectColumnsPrefix">
+        	id ,
+        	openId,
+        	nickname,
+        	gender,
+        	vip,
+        	yellowYearVip,
+        	level,
+        	figureurl30,
+        	figureurl50,
+        	figureurl100,
+        	userId,
+        	creator,
+        	updator,
+        	created,
+        	updated,
+        	sort,
+        	remark,
+        	status,
+        	delStatue
+	</sql>
+
+	<!-- 按主键查找条件语句 -->
+	<sql id="conditionOnlyId">
+		id = #{id}
+	</sql>
+	
+	<sql id="mainSql">
+		SELECT
+			<include refid="commonSelectColumnsPrefix"/>
+		FROM
+			<include refid="tableNameSql"/> f
+	</sql>
+	<sql id="varSql">
+		<where>
+			<if test="nickname!=null and nickname!=''">and f.nickname like "%"#{nickname}"%" </if>
+			<if test="openId!=null and openId!=''">and f.openId=#{openId} </if>
+		</where>
+	</sql>
+	<select id="findById" parameterType="String" resultMap="qqUserInfoResultMap">
+		<include refid="mainSql"/>
+		where <include refid="varSql"/>
+	</select>
+	<select id="findByOpenId" parameterType="String" resultMap="qqUserInfoResultMap">
+		<include refid="mainSql"/>
+		where openId = #{openId}
+	</select>
+	<select id="findCountBy" parameterType="java.util.Map" resultType="INTEGER">
+		SELECT
+			COUNT(*) AS C
+		FROM
+			<include refid="tableNameSql"/> f
+		<include refid="varSql"/>
+	</select>
+    <insert id="save" parameterType="com.yxkong.tencent.model.QQUseInfo">
+		insert into
+			<include refid="tableNameSql"/>
+		(
+			<include refid="commonSelectColumnsPrefix"/>
+		)
+		values
+		(	
+			#{id, jdbcType=VARCHAR} ,
+			#{openId, jdbcType=VARCHAR} ,
+			#{nickname, jdbcType=VARCHAR} ,
+			#{gender, jdbcType=VARCHAR} ,
+			#{vip, jdbcType=BOOLEAN} ,
+			#{yellowYearVip, jdbcType=BOOLEAN} ,
+			#{level, jdbcType=INTEGER} ,
+			#{figureurl30, jdbcType=VARCHAR} ,
+			#{figureurl50, jdbcType=VARCHAR} ,
+			#{figureurl100, jdbcType=VARCHAR} ,
+			#{userId, jdbcType=VARCHAR} ,
+			#{creator, jdbcType=VARCHAR} ,
+			#{updator, jdbcType=VARCHAR} ,
+			#{created, jdbcType=TIMESTAMP} ,
+			#{updated, jdbcType=TIMESTAMP} ,
+			#{sort, jdbcType=INTEGER} ,
+			#{remark, jdbcType=VARCHAR} ,
+			#{status, jdbcType=INTEGER} ,
+			#{delStatue, jdbcType=INTEGER} 
+		)
+	</insert>
+
+	<update id="update" parameterType="com.yxkong.tencent.model.QQUseInfo">
+		update
+			<include refid="tableNameSql"/>
+		set
+		 <trim suffixOverrides=",">
+		    <if test="openId!=null and openId!=''">openId=#{openId, jdbcType=VARCHAR} ,</if>
+		    <if test="nickname!=null and nickname!=''">nickname=#{nickname, jdbcType=VARCHAR} ,</if>
+		    <if test="gender!=null and gender!=''">gender=#{gender, jdbcType=VARCHAR} ,</if>
+		    <if test="vip!=null and vip!=''">vip=#{vip, jdbcType=BOOLEAN} ,</if>
+		    <if test="yellowYearVip!=null and yellowYearVip!=''">yellowYearVip=#{yellowYearVip, jdbcType=BOOLEAN} ,</if>
+		    <if test="level!=null and level!=''">level=#{level, jdbcType=INTEGER} ,</if>
+		    <if test="figureurl30!=null and figureurl30!=''">figureurl30=#{figureurl30, jdbcType=VARCHAR} ,</if>
+		    <if test="figureurl50!=null and figureurl50!=''">figureurl50=#{figureurl50, jdbcType=VARCHAR} ,</if>
+		    <if test="figureurl100!=null and figureurl100!=''">figureurl100=#{figureurl100, jdbcType=VARCHAR} ,</if>
+		    <if test="userId!=null and userId!=''">userId=#{userId, jdbcType=VARCHAR} ,</if>
+			<if test="updator!=null and updator!=''">updator=#{updator, jdbcType=VARCHAR} ,</if>
+			<if test="updated!=null">updated=#{updated, jdbcType=TIMESTAMP} ,</if>
+			<if test="sort!=null">sort=#{sort, jdbcType=INTEGER} ,</if>
+			<if test="remark!=null and remark!=''">remark=#{remark, jdbcType=VARCHAR} ,</if>
+			<if test="status!=null and status!=''">status=#{status, jdbcType=INTEGER} ,</if>
+			<if test="delStatue!=null and delStatue!=''">delStatue=#{delStatue, jdbcType=INTEGER},</if>
+		 </trim>
+		where <include refid="conditionOnlyId"/>
+	</update>
+</mapper>

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:mvc="http://www.springframework.org/schema/mvc" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						   http://www.springframework.org/schema/beans/spring-beans-4.1.xsd 
+						   http://www.springframework.org/schema/context 
+	 					   http://www.springframework.org/schema/context/spring-context-4.1.xsd 
+						   http://www.springframework.org/schema/mvc 
+						   http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+						   http://www.springframework.org/schema/tx 
+                           http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+						   http://www.springframework.org/schema/aop
+						   http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+">
+   <!-- 注解支持 -->  
+	<mvc:annotation-driven/>
+ <!-- 
+           读取properties配置信息,读取常量值  ,解密加密密码
+            可以在spring的配置文件中通过${常量名获取}  也可以在spring容器中的pojo中通过@Value("${常量名获取}") -->
+   <bean id="propertyConfigurer"
+		class="com.yxkong.common.utils.CustomizedPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:init.properties</value>
+			</list>
+		</property>
+   </bean>
+    <!-- 引入属性文件
+   <context:property-placeholder location="classpath:dbinfo.properties" />-->
+   <!-- 配置Druid数据源 -->
+   <bean  name="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+      	<property name="url" value="${database.url}" />
+		<property name="username" value="${database.username}" />
+		<property name="password" value="${database.password}" />
+		
+        <!-- 初始化连接大小 -->
+		<property name="initialSize" value="${database.pool.initialSize}" />
+		<!-- 连接池最大使用连接数量 -->
+		<property name="maxActive" value="${database.pool.maxActive}" />
+		<!-- 连接池最大空闲  已废弃
+		<property name="maxIdle" value="${database.pool.maxIdle}" />
+		-->
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="${database.pool.minIdle}" />
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="${database.pool.maxWait}" />
+
+		<!-- <property name="poolPreparedStatements" value="true" /> <property name="maxPoolPreparedStatementPerConnectionSize" value="33" /> -->
+
+		<property name="validationQuery" value="${database.validationQuery}" />
+		<property name="testOnBorrow" value="${database.pool.testOnBorrow}" />
+		<property name="testOnReturn" value="${database.pool.testOnReturn}" />
+		<property name="testWhileIdle" value="${database.pool.testWhileIdle}" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${database.pool.timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${database.pool.minEvictableIdleTimeMillis}" />
+
+		<!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandoned" value="true" />
+		<!-- 1800秒，也就是30分钟 -->
+		<property name="removeAbandonedTimeout" value="1800" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="true" />
+
+		<!-- 监控数据库,需要在web.xml中配置StatViewServlet -->
+		<property name="filters" value="stat" /> 
+		<!-- <property name="filters" value="mergeStat" />-->
+   </bean>
+   <!--通过注解方式构建上下文-->
+   <context:annotation-config />
+   <!-- 注解方式配置事物 -->
+   <tx:annotation-driven />
+   <!-- 配置mybatis start-->
+   <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	   <property name="dataSource" ref="dataSource" />
+		<!-- 指定sqlMapConfig总配置文件，订制的environment在spring容器中不在生效  -->  
+       <property  name="configLocation"  value="classpath:mybatis-config.xml"/> 
+		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 
+		          指定实体类映射文件，可以指定同时指定某一包以及子包下面的所有配置文件，
+		   mapperLocations和configLocation有一个即可，
+		        当需要为实体类指定别名时，可指定configLocation属性，
+		         再在mybatis总配置文件中采用mapper引入实体类映射文件 --> 
+		<property name="mapperLocations" value="classpath:com/yxkong/**/*.xml" />
+   </bean>
+   <bean id="mapperScannerConfig" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.yxkong" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+   </bean>
+   <!-- 配置mybatis end-->
+   <!-- 配置hibernate4 start -->
+    <!-- 设置hibernate的sessionFactory-->
+   <bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+        <property name="sessionFactory">
+           <ref bean="sessionFactory" />
+        </property>
+        <property name="cacheQueries">
+           <value>true</value>
+        </property>
+    </bean>  
+    <!-- hibernate4 创建sessionfactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+			    <!-- 设置数据库方言 -->
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<!-- 设置自动创建|更新|验证数据库表结构 -->
+				<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+				<!-- 是否在控制台显示sql -->
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<!-- 是否格式化sql，优化显示 -->
+				<prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+				<!-- 二级缓存的统计策略，查看二级缓存中存放的数据条数，查询时错过的数据条数，缓存命中率等信息 -->
+				<prop key="hibernate.generate_statistics">false</prop>
+				<!-- 是否显示注释，用以指出什么操作产生的 SQL语句 ,默认false-->
+				<prop key="hibernate.use_sql_comments">false</prop>
+				<!-- 数据库批量查询最大数 -->
+				<prop key="hibernate.jdbc.fetch_size">50</prop>
+        		<!-- 数据库批量更新、添加、删除操作最大数 -->
+        		<prop key="hibernate.jdbc.batch_size">50</prop>
+        		<!-- 是否自动提交事务 -->
+        		<prop key="hibernate.connection.autocommit">true</prop>
+        		<!-- 指定hibernate在何时释放JDBC连接 -->
+        		<prop key="hibernate.connection.release_mode">after_statement</prop>
+        		<!-- 创建session方式 hibernate4.x 的方式 -->
+        		<prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>
+        		<!-- javax.persistence.validation.mode默认情况下是auto的，就是说如果不设置的话它是会自动去你的classpath下面找一个bean-validation**包所以把它设置为none即可 -->
+        		<prop key="javax.persistence.validation.mode">none</prop>
+        		<!-- 设置外连接抓取树的最大深度取值. 建议设置为0到3之间 -->
+				<prop key="hibernate.max_fetch_depth">3</prop>
+				<!-- 把Hibernate查询中的一些短语映射为SQL短语-->
+				<prop key="hibernate.query.substitutions">true 1, false 0</prop>
+				<!-- 是不是使用反射优化,为true采用CGLIB动态代理对象 -->
+				<prop key="hibernate.bytecode.use_reflection_optimizer"> true </prop>
+				<!-- 是否开启查询缓存 -->
+				<prop key="hibernate.cache.use_query_cache">true</prop>  
+				<!-- 是否开启二级缓存 -->
+                <prop key="hibernate.cache.use_second_level_cache">true</prop>
+                <!-- hibernate3 二级缓存配置 -->
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+				<!-- hibernate4 二级缓存配置，当有一个sessionfactory时用SingletonEhCacheRegionFactory，多个时用EhCacheRegionFactory -->
+                <prop key="hibernate.cache.region.factory_class">org.hibernate.cache.SingletonEhCacheRegionFactory</prop>
+                <!-- 指定ehcache配置文件 -->
+                <prop key="hibernate.cache.provider_configuration_file_resource_path">/ehcache.xml</prop>
+				<!-- <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider </prop> -->
+			</props>
+		</property>
+		<property name="packagesToScan">
+			<list>
+				<value>com.yxkong.common.model</value>
+				<value>com.yxkong.system.model</value>
+				<value>com.yxkong.tencent.model</value>
+			</list>
+		</property>
+	</bean>
+   <!-- 配置hibernate4 end -->
+   <!-- 事务配置 -->
+   <!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+    <!-- 这里扫描的时候将Controller排除  -->
+   <context:component-scan base-package="com.yxkong">
+      <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+   </context:component-scan>
+  
+	<!-- 定义 Autowired  自动注入 bean -->
+    <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/> 
+  
+    <!-- 事务切入点 -->
+    <bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor" abstract="false">
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="insert*">PROPAGATION_REQUIRED</prop>
+				<prop key="append*">PROPAGATION_REQUIRED</prop>
+				<prop key="save*">PROPAGATION_REQUIRED</prop>
+				<prop key="add*">PROPAGATION_REQUIRED</prop>
+				<prop key="batch*">PROPAGATION_REQUIRED</prop>
+				<prop key="create*">PROPAGATION_REQUIRED</prop>
+				<prop key="exe*">PROPAGATION_REQUIRED</prop>
+				<prop key="import*">PROPAGATION_REQUIRED</prop>
+				<prop key="update*">PROPAGATION_REQUIRED</prop>
+				<prop key="modify*">PROPAGATION_REQUIRED</prop>
+				<prop key="edit*">PROPAGATION_REQUIRED</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED</prop>
+				<prop key="del*">PROPAGATION_REQUIRED</prop>
+				<prop key="remove*">PROPAGATION_REQUIRED</prop>
+				<prop key="repair*">PROPAGATION_REQUIRED</prop>
+				<prop key="delAndRepair*">PROPAGATION_REQUIRED</prop>
+				<prop key="*NoTran">PROPAGATION_SUPPORTS</prop>
+				<prop key="*">PROPAGATION_REQUIRED, readOnly</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="autoProxyCreator"
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="interceptorNames">
+			<list>
+				<idref bean="transactionInterceptor" />
+			</list>
+		</property>
+		<property name="beanNames">
+			<list>
+				<value>*Service</value>
+				<value>*ServiceImpl</value>
+			</list>
+		</property>
+		<!--
+			<property name="proxyTargetClass"> <value>true</value> </property>
+		-->
+	</bean>
+	<!-- 配置druid监控spring jdbc -->
+	<bean id="druid-stat-interceptor" class="com.alibaba.druid.support.spring.stat.DruidStatInterceptor">
+	</bean>
+	<bean id="druid-stat-pointcut" class="org.springframework.aop.support.JdkRegexpMethodPointcut" scope="prototype">
+		<property name="patterns">
+			<list>
+				<value>com.yxkong.common.service.*</value>
+				<value>com.yxkong.system.service.*</value>
+			</list>
+		</property>
+	</bean>
+	<aop:config>
+		<aop:advisor advice-ref="druid-stat-interceptor" pointcut-ref="druid-stat-pointcut" />
+	</aop:config>
+</beans>

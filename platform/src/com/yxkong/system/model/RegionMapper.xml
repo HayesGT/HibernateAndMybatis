@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yxkong.system.model.Region">
+  <resultMap type="com.yxkong.system.model.Region" id="regionResultMap">
+     <result column="id" property="id" jdbcType="VARCHAR" />
+     <result column="name" property="name" jdbcType="VARCHAR"/>
+     <result column="parentId" property="parentId" jdbcType="VARCHAR"/>
+  </resultMap>
+  <!-- 表名 -->
+  <sql id="tableNameSql">
+	F_Region 
+  </sql>
+
+	<!-- 用于select查询、insert的公用抽取的列 -->
+	<sql id="commonSelectColumnsPrefix">
+        	id ,
+        	name,
+        	parentId
+	</sql>
+
+	<!-- 按主键查找条件语句 -->
+	<sql id="conditionOnlyId">
+		id = #{id}
+	</sql>
+	
+	<sql id="mainSql">
+		SELECT
+			<include refid="commonSelectColumnsPrefix"/>
+		FROM
+			<include refid="tableNameSql"/> f
+	</sql>
+	<sql id="varSql">
+		<where>
+			<if test="name!=null and name!=''">and f.name like #{name} </if>
+			<if test="parentId!=null and parentId!=''">and f.parentId=#{parentId} </if>
+		</where>
+	</sql>
+	<select id="findById" parameterType="String" resultMap="regionResultMap">
+		<include refid="mainSql"/>
+		where <include refid="conditionOnlyId"/>
+	</select>
+	<select id="findCountBy" parameterType="java.util.Map" resultType="INTEGER">
+		SELECT
+			COUNT(*) AS C
+		FROM
+			<include refid="tableNameSql"/> f
+		<include refid="varSql"/>
+	</select>
+	<select id="findListBy" parameterType="java.util.Map"  resultMap="regionResultMap">
+		<include refid="mainSql"/>
+		<where>
+		    <if test="parentId!=null and parentId!=''"> and f.parentId=#{parentId}</if>
+		    <if test="name!=null and name!=''"> and f.name like "%"#{name}"%"</if>
+			<if test="searchValue!=null and searchValue!=''">or f.name like "%"#{searchValue}"%" or f.parentId like "%"#{searchValue}"%"</if>
+		</where>
+		<if test="SORT != null and SORT != ''">
+ 			order by ${SORT}
+ 			<if test="DIR != null and DIR != ''">
+ 				 ${DIR}
+ 			</if>
+ 		</if>
+	</select>
+	<select id="findListByIds"  resultMap="regionResultMap">
+		<include refid="mainSql"/>
+		 where f.id in <foreach index="index" item="item" collection="array" separator="," open="(" close=")" >#{item}</foreach>
+	</select>
+
+</mapper>

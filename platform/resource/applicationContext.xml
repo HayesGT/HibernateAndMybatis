@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+						http://www.springframework.org/schema/context 
+	 					http://www.springframework.org/schema/context/spring-context-4.1.xsd 
+">
+	
+	<import resource="classpath:applicationContext-*.xml" />
+	<!-- 使Spring关注Annotation -->
+    <context:annotation-config/>
+    <!-- 让Spring通过自动扫描来查询和管理Bean,在对应的文件里有精确控制 
+	<context:component-scan base-package="com.yxkong" />-->
+	<!-- 获取资源文件
+	          这里支持多种寻址方式：classpath和file
+       <value>classpath:/opt/demo/config/demo-db.properties</value>  
+                  推荐使用file的方式引入，这样可以将配置和代码分离 
+       <value>file:/opt/demo/config/demo-db.properties</value>  
+     -->
+    <bean id="applicationProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>classpath:init.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <!-- 这里也可以再次引入locations -->
+		<property name="properties" ref="applicationProperties"/>  
+	</bean>
+
+	<bean id="applicationUtil" class="com.yxkong.common.utils.ApplicationUtil"></bean>
+</beans>
